@@ -12,14 +12,14 @@ function sanify_path(path: string) {
     return `${path_array.join("/")}`;
 }
 
-function gen_sitemap(paths) {
+function gen_sitemap(paths, baseurl) {
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`
 
   for (let path of paths) {
     xml += `
     <url>
-      <loc>${sanify_path(path)}</loc>
+      <loc>${baseurl + sanify_path(path)}</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
     </url>
 `;
@@ -37,7 +37,7 @@ function getDirectories(src, callback) {
 };
 
 
-function makeListFromDirectory() {
+function makeListFromDirectory(baseurl) {
   console.log("\x1b[32mGenerating sitemap...");
   getDirectories('./', function (err, res) {
     if (err) {
@@ -47,27 +47,27 @@ function makeListFromDirectory() {
       paths = paths.filter(path => !path.includes("node"));
       paths = paths.filter(path => path.includes("+page.svelte"));
       paths = paths.map(path => path.replace("./demo/", "").replace("./src/routes", ""));
-      gen_sitemap(paths);
+      gen_sitemap(paths, baseurl);
     }
   });
 }
 
-export function Sitemap() {
+type Config = {
+  baseurl: string;
+}
+
+export function Sitemap({ baseurl }: Config): PluginOption {
   const plugin: Plugin = {
     name: 'vite-plugin-svelte-sitemap',
     // only apply during dev
     apply: 'serve',
-    // handleHotUpdate() {
-    //   makeListFromDirectory();
-    // },
-
     handleHotUpdate(ctx: HmrContext): void | Promise<Array<ModuleNode> | void> {
       if(ctx.file.split("/")[ctx.file.split("/").length - 1] == "sitemap.xml")
         return;
 
-      makeListFromDirectory();
-    },
+      makeListFromDirectory(baseurl);
+    }
   }
-  makeListFromDirectory();
+  makeListFromDirectory(baseurl);
   return plugin;
-  }
+}
