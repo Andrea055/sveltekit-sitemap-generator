@@ -44,9 +44,9 @@ function makeListFromDirectory(baseurl) {
       console.log('Error', err);
     } else {
       let paths = Array.from(res);
-      paths = paths.filter(path => !path.includes("node")); // Filter node modules
-      paths = paths.filter(path => path.includes("+page.svelte"));  // Get only pages, not layouts
-      paths = paths.map(path => path.replace("./demo/", "").replace("./src/routes", "")); // Remove src/routes
+      paths = paths.filter((path: string) => !path.includes("node")); // Filter node modules
+      paths = paths.filter((path: string) => path.includes("+page.svelte"));  // Get only pages, not layouts
+      paths = paths.map((path: string) => path.replace("./demo/", "").replace("./src/routes", "")); // Remove src/routes
       gen_sitemap(paths, baseurl);
     }
   });
