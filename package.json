@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-svelte-sitemap",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Vite plugin to generate sitemap from sveltekit project",
   "homepage": "https://github.com/Andrea055/sveltekit-sitemap-generator",
   "type": "module",
