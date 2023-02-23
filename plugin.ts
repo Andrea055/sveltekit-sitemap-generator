@@ -5,18 +5,18 @@ import { existsSync, mkdirSync } from 'fs';
 
 function sanify_path(path: string) {
   let path_array = path.split("/");
-  path_array.pop();
-  if(path_array.join("/") == "")
-    return `/${path_array.join("/")}`;
+  path_array.pop(); // Remove +page.svelte
+  if(path_array.join("/") == "")  // If path is index
+    return `/${path_array.join("/")}`;  // Add a trailing slash
   else
-    return `${path_array.join("/")}`;
+    return `${path_array.join("/")}`; // Don't add anything
 }
 
 function gen_sitemap(paths, baseurl) {
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`
 
-  for (let path of paths) {
+  for (let path of paths) { // Convert JS date to W3C date format
     xml += `
     <url>
       <loc>${baseurl + sanify_path(path)}</loc>
@@ -26,7 +26,7 @@ function gen_sitemap(paths, baseurl) {
   }
 
   xml += `</urlset>`;
-  if(!existsSync("static"))
+  if(!existsSync("static")) // Put it in static
     mkdirSync("static");
 
   writeFile("static/sitemap.xml", xml);
@@ -44,9 +44,9 @@ function makeListFromDirectory(baseurl) {
       console.log('Error', err);
     } else {
       let paths = Array.from(res);
-      paths = paths.filter(path => !path.includes("node"));
-      paths = paths.filter(path => path.includes("+page.svelte"));
-      paths = paths.map(path => path.replace("./demo/", "").replace("./src/routes", ""));
+      paths = paths.filter(path => !path.includes("node")); // Filter node modules
+      paths = paths.filter(path => path.includes("+page.svelte"));  // Get only pages, not layouts
+      paths = paths.map(path => path.replace("./demo/", "").replace("./src/routes", "")); // Remove src/routes
       gen_sitemap(paths, baseurl);
     }
   });
