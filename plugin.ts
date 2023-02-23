@@ -1,4 +1,4 @@
-import { PluginOption, Plugin } from 'vite';
+import { PluginOption, Plugin, HmrContext, ModuleNode, ResolvedConfig, UserConfig  } from 'vite';
 import { writeFile } from 'fs/promises'
 import glob from 'glob';
 import { existsSync, mkdirSync } from 'fs';
@@ -6,7 +6,10 @@ import { existsSync, mkdirSync } from 'fs';
 function sanify_path(path: string) {
   let path_array = path.split("/");
   path_array.pop();
-  return `/${path_array.join("/")}`;
+  if(path_array.join("/") == "")
+    return `/${path_array.join("/")}`;
+  else
+    return `${path_array.join("/")}`;
 }
 
 function gen_sitemap(paths) {
@@ -43,27 +46,28 @@ function makeListFromDirectory() {
       let paths = Array.from(res);
       paths = paths.filter(path => !path.includes("node"));
       paths = paths.filter(path => path.includes("+page.svelte"));
-      paths = paths.map(path => path.replace("./demo/", "").replace("./src/", ""));
+      paths = paths.map(path => path.replace("./demo/", "").replace("./src/routes", ""));
       gen_sitemap(paths);
     }
   });
 }
 
-type PluginArgs = {
-  baseDir: string
-  filterList?: string[]
-}
-
 export function Sitemap() {
-  console.log("OKOKOKOK")
   const plugin: Plugin = {
     name: 'vite-plugin-svelte-sitemap',
     // only apply during dev
     apply: 'serve',
-    handleHotUpdate() {
+    // handleHotUpdate() {
+    //   makeListFromDirectory();
+    // },
+
+    handleHotUpdate(ctx: HmrContext): void | Promise<Array<ModuleNode> | void> {
+      if(ctx.file.split("/")[ctx.file.split("/").length - 1] == "sitemap.xml")
+        return;
+
       makeListFromDirectory();
     },
   }
   makeListFromDirectory();
   return plugin;
-}
+  }
